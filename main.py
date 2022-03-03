@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import messagebox
 
 LIGHTEN_GREEN = '#EDFFEC'
 GREEN = '#CAF7E3'
@@ -22,6 +23,38 @@ def gui_app():
     window.title('   Assess Typing Speed App')
     window.iconbitmap('favicon.ico')
     window.geometry('900x600')
+
+    # ---------------------------- Reset Mechanism ---------------------------- #
+    def reset_timer():
+        global space_counter, word_index, word_per_min, char_per_min, actual_word_per_min, actual_char_per_min, usr_wrong_words, word_label_index_bg
+
+        window.after_cancel(timer)
+        window.focus_set()
+        cpm_entry_label.config(text='?')
+        wpm_entry_label.config(text='?')
+        time_entry_label.config(text='60')
+        typing_entry.delete(0, END)
+        typing_entry.config(fg=GREY)
+        typing_entry.insert(END, 'type the words here')
+        word_per_min = 0
+        char_per_min = 0
+        usr_wrong_words = {}
+        actual_word_per_min = 0
+        actual_char_per_min = 0
+        word_label_index_bg = 1
+        word_index = 0
+        space_counter = 0
+
+        # TEXT READER
+        grid = 0
+        for a in range(5):
+            for b in range(5):
+                element_index = str(a) + str(b)
+                frames[element_index].config(text=words[grid], bg=LIGHTEN_GREEN)
+                frames[element_index].pack()
+
+                grid += 1
+        list(frames.values())[0].config(bg=LIGHT_GREEN)
 
     # ---------------------------- Countdown Mechanism Timer ---------------------------- #
 
@@ -118,8 +151,7 @@ def gui_app():
     # ------------------------------- Get Typing Entry ------------------------------- #
 
     def get_typing_entry(event):
-        global word_index
-        global space_counter
+        global word_index, space_counter
 
         if event.keysym == 'space':
             word = typing_entry.get()
@@ -138,12 +170,18 @@ def gui_app():
                     word_index += 1
                 word_index -= 25
                 space_counter = 0
+        elif event.keysym == 'Return':
+            messagebox.showerror(
+                title='typing speed test',
+                message='Use space bar instead of enter, \nUse the "Restart" button to start over.'
+            )
 
     # ------------------------------- Clear Typing Entry ------------------------------- #
 
     def clear_typing(event):
         typing_entry.delete(0, END)
         typing_entry.config(fg='black')
+        typing_entry.unbind('<FocusIn>')
         count_down(60)
 
     # ------------------------------- Tkinter UI Setup ------------------------------- #
@@ -186,7 +224,7 @@ def gui_app():
     time_entry_label.place(relx=0.65, rely=0.5, anchor=CENTER)
 
     # RESTART BUTTON
-    restart_button = Button(scoreboard_frame, text='Restart', font=(FONT, 10))
+    restart_button = Button(scoreboard_frame, text='Restart', font=(FONT, 10), command=reset_timer)
     restart_button.place(relx=0.8, rely=0.5, anchor=CENTER)
 
     # READER FRAME
